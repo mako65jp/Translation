@@ -17,6 +17,7 @@ Displays the translation result and prompts processing.
 
 翻訳結果を追加する
 Add translation result
+// translation :: 翻訳結果を追加
 
 翻訳結果で置き換える。
 Replace with translation results.

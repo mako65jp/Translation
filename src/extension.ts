@@ -67,21 +67,42 @@ async function commandTranslate(
 
     // Displays the translation result and prompts processing.
     vscode.window
-      .showInformationMessage(res, 'Copy', 'Insert', 'Replace', 'Close')
+      .showInformationMessage(
+        res,
+        'Copy',
+        'Insert as comment line',
+        'Add to end of line',
+        'Replace',
+        'Close'
+      )
       .then(selection => {
         switch (selection) {
           case 'Copy':
             // Copy the translation results to the clipboard.
             vscode.env.clipboard.writeText(res);
             break;
-          case 'Insert':
-            // Add the translation result to the next line.
+          case 'Insert as comment line':
+            // Add the translation result to the next line as a comment line.
             editor.edit(editBuilder => {
               const positionNewLine = new vscode.Position(
                 editor.selection.end.line + 1,
                 0
               );
-              const translatedText = '// translation :: ' + res + '\n';
+              const translatedText = res + '\n';
+              editBuilder.insert(positionNewLine, translatedText);
+              vscode.commands.executeCommand('cursorLineStart');
+              vscode.commands.executeCommand('cursorDown');
+              vscode.commands.executeCommand('editor.action.addCommentLine');
+            });
+            break;
+          case 'Add to end of line':
+            // Add the translation result to end of line.
+            editor.edit(editBuilder => {
+              const positionNewLine = new vscode.Position(
+                editor.selection.end.line,
+                editor.selection.end.character + 1
+              );
+              const translatedText = '  ==> ' + res;
               editBuilder.insert(positionNewLine, translatedText);
             });
             break;

@@ -1,49 +1,42 @@
 # translation README
 
-## Features
+## Features :: 特徴
 
 This extension translates the selected string into Japanese or English.
+この拡張機能は、選択した文字列を日本語または英語に翻訳します。
 
-## Requirements
+## Requirements :: 必要条件
 
-Able to connect to the internet.
+Be able to connect to the Internet.
+インターネットに接続できる事。
 
-## Extension Settings
+## Extension Settings :: 拡張設定
 
 No setting is required.
+設定は不要です。
 
 ## Known Issues
 
 ## Release Notes
 
-### 1.0.0
+### 1.0
 
-翻訳結果をメッセージとして表示。
 Display the translation result as a message.
+翻訳結果をメッセージとして表示。
 
-### 1.1.0
+### 1.1
 
-表示した翻訳結果  を、編集中の文書に追加／選択文字列と置き換えのアクションを追加。
 Added the action to add / replace the displayed translation result to the document being edited.
+表示した翻訳結果を、編集中の文書に追加／選択文字列と置き換えのアクションを追加。
 
-### 1.2.0
+### 1.2
 
-表示した翻訳結果  を、クリップボードにコピーのアクションを追加。
 Added the action to copy the displayed translation result to the clipboard.
+表示した翻訳結果を、クリップボードにコピーのアクションを追加。
 
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-// translation :: **注：** Visual Studio Code を使用して README を作成できます。
-エディターの便利なキーボードショートカットを次に示します。
-
-- Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-- Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-- Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Change the displayed translation result action.
+-Add to the end of the line with the selected text of the document being edited
+-Add a comment line to the line below the selected string
+表示した翻訳結果のアクションを変更。
+・編集中の文書の選択文字列のある行末に追加
+・選択文字列の下の行にコメント行として追加
