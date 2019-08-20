@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { isUndefined } from 'util';
+import { promises } from 'fs';
 var request = require('request-promise');
 
 // this method is called when your extension is activated
@@ -45,72 +46,69 @@ export function deactivate() {}
 // Implementing translation commands.
 async function commandTranslate(editor: vscode.TextEditor, edit: vscode.TextEditorEdit, source: string, target: string) {
   if (!editor || editor.selection.isEmpty) {
-    return Promise.reject;
+    return '';
   }
 
   // Get the selected string.
-  const selectedText = editor.document.getText(editor.selection);
-  await translation(selectedText, source, target).then((res: string) => {
-    if (!res) {
-      return;
-    }
-
-    // Displays the translation result and prompts processing.
-    vscode.window.showInformationMessage(res, 'Copy', 'Insert as comment line', 'Add to end of line', 'Replace', 'Close').then(selection => {
-      switch (selection) {
-        case 'Copy':
-          // Copy the translation results to the clipboard.
-          vscode.env.clipboard.writeText(res);
-          break;
-        case 'Insert as comment line':
-          // Add the translation result to the next line as a comment line.
-          editor.edit(editBuilder => {
-            const translatedText = res + '\n';
-            editBuilder.replace(editor.selection, translatedText);
-            vscode.commands.executeCommand('editor.action.commentLine');
-            if (selectedText.endsWith('\n')) {
-              editBuilder.insert(editor.selection.start, selectedText);
-            } else {
-              editBuilder.insert(editor.selection.start, selectedText + '\n');
-            }
-            vscode.commands.executeCommand('cursorLineStart');
-          });
-          break;
-        case 'Add to end of line':
-          // Add the translation result to end of line.
-          editor.edit(editBuilder => {
-            const positionNewLine = new vscode.Position(editor.selection.end.line, editor.selection.end.character + 1);
-            const translatedText = '  ==> ' + res;
-            editBuilder.insert(editor.selection.end, translatedText);
-          });
-          break;
-        case 'Replace':
-          // Replace the selected string with the translation result.
-          editor.edit(editBuilder => {
-            editBuilder.replace(editor.selection, res);
-          });
-          break;
-        default:
-          // Close without doing anything.
-          break;
-      }
-    });
-  });
-}
-
-// Translates the selected string.
-async function translation(selectedText: string, source: string, target: string) {
-  // Format the text.
-  const text = selectedText
+  const selectedText = editor.document
+    .getText(editor.selection)
     .replace(/(\s)+/g, ' ') // Erase consecutive whitespace.
     .replace(/(^\s+)|(\s+$)/g, ''); // Remove leading and trailing blanks.
-
-  if (!text) {
-    return Promise.reject;
+  if (!selectedText) {
+    return '';
   }
 
-  // Execute translation.
-  return await executeTranslation(text, source, target);
+  // Translates the selected string.
+  const messageOptions = { modal: true };
+  await executeTranslation(selectedText, source, target).then(
+    results => {
+      if (!results || !results.trans) {
+        return '';
+      }
+
+      let translatedText = results.trans;
+      let originalText = results.orig;
+
+      // Displays the translation result and prompts processing.
+      const messageActionItem = ['Copy', 'Insert as comment line', 'Add to end of line', 'Replace'];
+      vscode.window.showInformationMessage(translatedText, messageOptions, ...messageActionItem).then(selectActionItem => {
+        switch (selectActionItem) {
+          case 'Copy':
+            // Copy the translation results to the clipboard.
+            vscode.env.clipboard.writeText(translatedText);
+            break;
+          case 'Insert as comment line':
+            // Add the translation result to the next line as a comment line.
+            editor.edit(editBuilder => {
+              editBuilder.replace(editor.selection, translatedText + '\n');
+              vscode.commands.executeCommand('editor.action.commentLine');
+              editBuilder.insert(editor.selection.start, originalText + '\n');
+              vscode.commands.executeCommand('cursorLineStart');
+            });
+            break;
+          case 'Add to end of line':
+            // Add the translation result to end of line.
+            editor.edit(editBuilder => {
+              const positionNewLine = new vscode.Position(editor.selection.end.line, editor.selection.end.character + 1);
+              editBuilder.insert(editor.selection.end, '  ==> ' + translatedText);
+            });
+            break;
+          case 'Replace':
+            // Replace the selected string with the translation result.
+            editor.edit(editBuilder => {
+              editBuilder.replace(editor.selection, translatedText);
+            });
+            break;
+          default:
+            // Close without doing anything.
+            break;
+        }
+      });
+    },
+    () => {
+      vscode.window.showErrorMessage('Translation    >>> ERROR <<<', messageOptions);
+    }
+  );
 }
 
 // Execute translation.
@@ -118,17 +116,39 @@ async function executeTranslation(text: string, source: string, target: string) 
   // Generate translation site parameters.
   const options = getParameterForTranslateSite(text, source, target);
 
-  return await request(options).then(async (res: { src: string; sentences: [] }) => {
-    // If the source language and translation result language are equal, the translation result is not required.
-    if (res.src === target) {
-      return '';
+  return await requestWithTimeout(options, 750).then(
+    // async (res: { src: string; dict: [], sentences: [] }) => {
+    async (res: any) => {
+      // If the source language and translation result language are equal, the translation result is not required.
+      if (!res || !res.src || res.src === target || !res.sentences) {
+        return { trans: '', orig: '' };
+      }
+
+      return {
+        trans: getTranslatedText(res.sentences),
+        orig: getOriginalText(res.sentences)
+      };
+    },
+    reason => {
+      return Promise.reject(reason);
     }
-    let result: string[] = [];
-    res.sentences.forEach((values: { trans: string }) => {
-      result.push(values.trans);
-    });
-    return result.join('\n');
+  );
+}
+
+function getTranslatedText(sentences: []) {
+  let result: string[] = [];
+  sentences.forEach((s: { orig: string; trans: string }) => {
+    result.push(s.trans || '');
   });
+  return result.join('\n');
+}
+
+function getOriginalText(sentences: []) {
+  let result: string[] = [];
+  sentences.forEach((s: { orig: string; trans: string }) => {
+    result.push(s.orig || '');
+  });
+  return result.join('\n');
 }
 
 // Generate translation site parameters.
@@ -136,9 +156,17 @@ function getParameterForTranslateSite(text: string, source: string, target: stri
   const configProxy = String(vscode.workspace.getConfiguration().get('http.proxy'));
 
   let options = {
-    uri: 'https://translate.google.com/translate_a/single?client=gtx' + '&sl=' + (source || 'auto') + '&tl=' + (target || 'auto') + '&dt=t&dt=bd&ie=UTF-8&oe=UTF-8&dj=1&source=icon' + '&q=' + encodeURIComponent(text),
+    uri: 'https://translate.google.com/translate_a/single?client=gtx' + '&dt=t&dt=bd&ie=UTF-8&oe=UTF-8&dj=1&source=icon' + '&sl=' + (source || 'auto') + '&tl=' + (target || 'auto') + '&q=' + encodeURIComponent(text),
     proxy: String(vscode.workspace.getConfiguration().get('http.proxy')),
     json: true
   };
   return options;
+}
+
+async function requestWithTimeout(options: any, timeoutMsec: number) {
+  return Promise.race([request(options), timeout(timeoutMsec)]);
+}
+
+async function timeout(msec: number) {
+  return new Promise((_, reject) => setTimeout(reject, msec));
 }
