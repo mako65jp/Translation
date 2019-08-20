@@ -45,3 +45,8 @@
 
 - Fixed a bug when not connected to the Internet
 - インターネット非接続時の不具合を修正
+
+### 1.4
+
+- Added extended function settings.
+- 拡張機能設定を追加。
