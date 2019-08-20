@@ -2,7 +2,7 @@
   "name": "translation",
   "displayName": "Translation",
   "description": "This extension translates the selected string into Japanese or English.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publisher": "mako65jp",
   "repository": "https://github.com/mako65jp/Translation",
   "engines": {
@@ -54,7 +54,26 @@
           "group": "Translate"
         }
       ]
-    }
+    },
+    "configuration": [
+      {
+        "title": "Translation",
+        "properties": {
+          "translation.displayModal": {
+            "type": "boolean",
+            "default": true,
+            "description": "Displays the translation result in modal."
+          },
+          "translation.processingTimeout": {
+            "type": "number",
+            "default": 500,
+            "minimum": 300,
+            "maximum": 2000,
+            "description": "Translation processing timeout. (ms)"
+          }
+        }
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

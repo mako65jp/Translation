@@ -1,8 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { isUndefined } from 'util';
-import { promises } from 'fs';
 var request = require('request-promise');
 
 // this method is called when your extension is activated
@@ -59,7 +57,8 @@ async function commandTranslate(editor: vscode.TextEditor, edit: vscode.TextEdit
   }
 
   // Translates the selected string.
-  const messageOptions = { modal: true };
+  const displayModal = vscode.workspace.getConfiguration('translation').get<boolean>('displayModal', true);
+  const messageOptions = { modal: displayModal };
   await executeTranslation(selectedText, source, target).then(
     results => {
       if (!results || !results.trans) {
@@ -116,8 +115,7 @@ async function executeTranslation(text: string, source: string, target: string) 
   // Generate translation site parameters.
   const options = getParameterForTranslateSite(text, source, target);
 
-  return await requestWithTimeout(options, 750).then(
-    // async (res: { src: string; dict: [], sentences: [] }) => {
+  return await requestWithTimeout(options).then(
     async (res: any) => {
       // If the source language and translation result language are equal, the translation result is not required.
       if (!res || !res.src || res.src === target || !res.sentences) {
@@ -163,8 +161,11 @@ function getParameterForTranslateSite(text: string, source: string, target: stri
   return options;
 }
 
-async function requestWithTimeout(options: any, timeoutMsec: number) {
-  return Promise.race([request(options), timeout(timeoutMsec)]);
+async function requestWithTimeout(options: any) {
+  // Get translation processing timeout setting.
+  const processingTimeout = vscode.workspace.getConfiguration('translation').get<number>('processingTimeout', 750);
+
+  return Promise.race([request(options), timeout(processingTimeout)]);
 }
 
 async function timeout(msec: number) {
