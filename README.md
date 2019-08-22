@@ -50,3 +50,12 @@
 
 - Added extended function settings.
 - 拡張機能設定を追加。
+
+### 1.5
+
+- Refactoring the translation process.
+- The translation result has been changed to Diagnostics display. 
+- Actions on translation results are abolished.
+- 翻訳処理のリファクタリング。
+- 翻訳結果は、Diagnostics 表示に変更。
+- 翻訳結果に対するアクションは廃止。

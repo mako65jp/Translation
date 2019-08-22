@@ -2,7 +2,7 @@
   "name": "translation",
   "displayName": "Translation",
   "description": "This extension translates the selected string into Japanese or English.",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publisher": "mako65jp",
   "repository": "https://github.com/mako65jp/Translation",
   "engines": {
@@ -12,64 +12,78 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.translateToJapanese",
-    "onCommand:extension.translateToEnglish"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.translateToJapanese",
-        "title": "日本語へ翻訳"
-      },
-      {
-        "command": "extension.translateToEnglish",
-        "title": "英語へ翻訳"
+        "command": "extension.translate",
+        "title": "翻訳"
       }
     ],
     "keybindings": [
       {
-        "command": "extension.translateToJapanese",
-        "key": "ctrl+shift+j",
-        "mac": "cmd+shift+j",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "extension.translateToEnglish",
-        "key": "ctrl+shift+E",
-        "mac": "cmd+shift+E",
-        "when": "editorTextFocus"
+        "command": "extension.translate",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "editorHasSelection"
       }
     ],
     "menus": {
       "editor/context": [
         {
           "when": "editorHasSelection",
-          "command": "extension.translateToJapanese",
-          "group": "Translate"
-        },
-        {
-          "when": "editorHasSelection",
-          "command": "extension.translateToEnglish",
+          "command": "extension.translate",
           "group": "Translate"
         }
       ]
     },
     "configuration": [
       {
-        "title": "Translation",
+        "title": "translationExt",
         "properties": {
-          "translation.displayModal": {
+          "translationExt.displayModal": {
             "type": "boolean",
             "default": true,
             "description": "Displays the translation result in modal."
           },
-          "translation.processingTimeout": {
+          "translationExt.processingTimeout": {
             "type": "number",
-            "default": 500,
-            "minimum": 300,
+            "default": 750,
+            "minimum": 500,
             "maximum": 2000,
             "description": "Translation processing timeout. (ms)"
+          },
+          "translationExt.pattern": {
+            "type": "array",
+            "default": [
+              {
+                "src": "en",
+                "target": [
+                  "ja",
+                  "es",
+                  "de",
+                  "fr",
+                  "it",
+                  "zh",
+                  "ko"
+                ]
+              },
+              {
+                "src": "ja",
+                "target": [
+                  "en",
+                  "es",
+                  "de",
+                  "fr",
+                  "it",
+                  "zh",
+                  "ko"
+                ]
+              }
+            ],
+            "description": "Language combinations to translate."
           }
         }
       }
@@ -80,7 +94,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/src/test/runTest.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
@@ -89,8 +103,8 @@
     "@types/vscode": "^1.37.0",
     "glob": "^7.1.4",
     "mocha": "^6.1.4",
+    "tslint": "^5.19.0",
     "typescript": "^3.3.1",
-    "tslint": "^5.12.1",
     "vscode-test": "^1.0.2"
   },
   "dependencies": {
