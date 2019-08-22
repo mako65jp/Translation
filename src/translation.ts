@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 var request = require('request-promise');
 
-// Get the character string selected on the active editor
+// Get the character string selected on the active editor.
 export function getSelectedText(
   document: vscode.TextDocument,
   selection: vscode.Selection

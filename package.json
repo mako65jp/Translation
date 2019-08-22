@@ -18,23 +18,38 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.translate",
-        "title": "翻訳"
+        "command": "translation.translation",
+        "title": "選択範囲を翻訳"
+      },
+      {
+        "command": "translation.clear",
+        "title": "翻訳をクリア"
       }
     ],
     "keybindings": [
       {
-        "command": "extension.translate",
-        "key": "ctrl+shift+t",
-        "mac": "cmd+shift+t",
+        "command": "translation.translation",
+        "key": "ctrl+Alt+t",
+        "mac": "cmd+Alt+t",
         "when": "editorHasSelection"
+      },
+      {
+        "command": "translation.clear",
+        "key": "ctrl+Alt+t t",
+        "mac": "cmd+Alt+t t",
+        "when": "editorFocus"
       }
     ],
     "menus": {
       "editor/context": [
         {
           "when": "editorHasSelection",
-          "command": "extension.translate",
+          "command": "translation.translation",
+          "group": "Translate"
+        },
+        {
+          "when": "editorFocus",
+          "command": "translation.clear",
           "group": "Translate"
         }
       ]
@@ -43,19 +58,15 @@
       {
         "title": "translationExt",
         "properties": {
-          "translationExt.displayModal": {
-            "type": "boolean",
-            "default": true,
-            "description": "Displays the translation result in modal."
-          },
           "translationExt.processingTimeout": {
+            "description": "Translation processing timeout. (ms)",
             "type": "number",
             "default": 750,
             "minimum": 500,
-            "maximum": 2000,
-            "description": "Translation processing timeout. (ms)"
+            "maximum": 2000
           },
           "translationExt.pattern": {
+            "description": "Language combinations to translate.",
             "type": "array",
             "default": [
               {
@@ -82,8 +93,7 @@
                   "ko"
                 ]
               }
-            ],
-            "description": "Language combinations to translate."
+            ]
           }
         }
       }
