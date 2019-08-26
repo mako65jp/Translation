@@ -12,18 +12,30 @@ export default class Translator
   implements vscode.CodeActionProvider, vscode.Disposable {
   private _disposable: vscode.Disposable = Object.create(null);
 
+  private static Source = 'Translator';
+
+  private static Config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
+    Translator.Source
+  );
+  private static ConfigProxy =
+    vscode.workspace.getConfiguration().get<string>('http.proxy') || '';
+
   private _diagnosticMap: Map<vscode.Diagnostic[]> = {};
   private _diagnostics: vscode.DiagnosticCollection = Object.create(null);
 
-  static FixOnSuggestion: string = 'translator.fixOnSuggestion';
+  public static FixOnSuggestion: string =
+    Translator.Source + '.fixOnSuggestion';
   private _fixOnSuggestionCommand: vscode.Disposable = Object.create(null);
 
-  // private onActiveTextEditorChanged(editor?: vscode.TextEditor): any {
-  //   if (editor) {
-  //     // this._activeDocumentPath = editor.document.fileName;
-  //     // this.checkDocument(editor.document);
-  //   }
-  // }
+  private static createDiagnosticObject(range: vscode.Range, suggest: string) {
+    let diag = new vscode.Diagnostic(
+      range,
+      suggest,
+      vscode.DiagnosticSeverity.Information
+    );
+    diag.source = Translator.Source;
+    return diag;
+  }
 
   private createDiagnostics(editor: vscode.TextEditor, transText: string) {
     const document = editor.document;
@@ -33,15 +45,7 @@ export default class Translator
       this._diagnostics.get(document.uri) || []
     ).filter(d => !range.intersection(d.range));
 
-    diagnostics.push(
-      utils.createDiagnosticObject(
-        document,
-        range,
-        'Translator',
-        vscode.DiagnosticSeverity.Information,
-        transText
-      )
-    );
+    diagnostics.push(Translator.createDiagnosticObject(range, transText));
 
     this._diagnostics.set(document.uri, diagnostics);
     this._diagnosticMap[document.uri.toString()] = diagnostics;
@@ -53,21 +57,15 @@ export default class Translator
     context: vscode.CodeActionContext,
     token: vscode.CancellationToken
   ): vscode.Command[] {
-    let diagnostic: vscode.Diagnostic = context.diagnostics[0];
-    let details: string[] = diagnostic.message.split(/\r?\n/g);
-    let error: string = '';
-    let suggestion: string = '';
-
-    if (details.length < 2) {
-      return [];
-    }
-
-    error = document.getText(range);
-    suggestion = details[1];
+    const diagnostic = context.diagnostics.filter(
+      (d, i) => d.source === Translator.Source
+    )[0];
+    const suggestion = diagnostic.message;
+    const error = document.getText(range);
 
     let commands: vscode.Command[] = [];
     commands.push({
-      title: "Replace with '" + suggestion + "'",
+      title: "Replace with '" + suggestion.substring(0, 80) + " ... '",
       command: Translator.FixOnSuggestion,
       arguments: [document, diagnostic, error, suggestion]
     });
@@ -101,13 +99,16 @@ export default class Translator
       editor.document,
       editor.selection
     );
-    if (selectionText === '') {
+    if (!selectionText) {
       return;
     }
 
     await this.postTranslation(selectionText).then(results => {
       if (results.trans) {
-        this.createDiagnostics(editor, results.trans);
+        // If you can translate
+        if (results.orig !== results.trans) {
+          this.createDiagnostics(editor, results.trans);
+        }
       } else {
         // If translation results cannot be obtained or if an error occurs,
         // a message is displayed in the lower right.
@@ -118,9 +119,7 @@ export default class Translator
 
   private async postTranslation(text: string) {
     // Get translation pattern settings.
-    const pattern = vscode.workspace
-      .getConfiguration('translator')
-      .get<any[]>('pattern') || [
+    const pattern = Translator.Config.get<any[]>('pattern') || [
       { src: 'en', target: ['ja'] },
       { src: 'ja', target: ['en'] }
     ];
@@ -172,9 +171,10 @@ export default class Translator
     const options = this.getParameterForTranslateSite(text, target);
 
     // Get translation processing timeout setting.
-    const processingTimeout = vscode.workspace
-      .getConfiguration('translationExt')
-      .get<number>('processingTimeout', 750);
+    const processingTimeout = Translator.Config.get<number>(
+      'processingTimeout',
+      750
+    );
 
     return await Promise.race([
       request(options),
@@ -195,10 +195,6 @@ export default class Translator
 
   // Generate translation site parameters.
   private getParameterForTranslateSite(text: string, target: string) {
-    const configProxy = String(
-      vscode.workspace.getConfiguration().get('http.proxy')
-    );
-
     let options = {
       uri:
         'https://translate.google.com/translate_a/single?client=gtx' +
@@ -208,7 +204,7 @@ export default class Translator
         (target || 'auto') +
         '&q=' +
         encodeURIComponent(text),
-      proxy: String(vscode.workspace.getConfiguration().get('http.proxy')),
+      proxy: Translator.ConfigProxy,
       json: true
     };
     return options;
@@ -259,9 +255,11 @@ export default class Translator
       diagnostics = [];
     } else {
       const range: vscode.Range = editor.selection;
-      diagnostics = (this._diagnostics.get(document.uri) || []).filter(d => !range.intersection(d.range));
+      diagnostics = (this._diagnostics.get(document.uri) || []).filter(
+        d => !range.intersection(d.range)
+      );
     }
-    
+
     this._diagnostics.set(document.uri, diagnostics);
     this._diagnosticMap[document.uri.toString()] = diagnostics;
   }
@@ -275,6 +273,7 @@ export default class Translator
     );
 
     let subscriptions: vscode.Disposable[] = [];
+
     // vscode.window.onDidChangeActiveTextEditor(
     //   this.onActiveTextEditorChanged,
     //   this,
@@ -282,8 +281,9 @@ export default class Translator
     // );
 
     this._diagnostics = vscode.languages.createDiagnosticCollection(
-      'traslator'
+      Translator.Source
     );
+
     vscode.workspace.onDidCloseTextDocument(
       textDocument => {
         self._diagnostics.delete(textDocument.uri);

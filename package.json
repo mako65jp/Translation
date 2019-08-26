@@ -1,8 +1,8 @@
 {
   "name": "translation",
   "displayName": "Translation",
-  "description": "This extension translates the selected string into Japanese or English.",
-  "version": "1.5.0",
+  "description": "This extension translates the selected string.",
+  "version": "2.0.0",
   "publisher": "mako65jp",
   "repository": "https://github.com/mako65jp/Translation",
   "engines": {
@@ -35,8 +35,8 @@
       },
       {
         "command": "translation.clear",
-        "key": "ctrl+Alt+t t",
-        "mac": "cmd+Alt+t t",
+        "key": "ctrl+Alt+x",
+        "mac": "cmd+Alt+x",
         "when": "editorFocus"
       }
     ],
@@ -45,27 +45,27 @@
         {
           "when": "editorHasSelection",
           "command": "translation.translation",
-          "group": "Translate"
+          "group": "Translation"
         },
         {
           "when": "editorFocus",
           "command": "translation.clear",
-          "group": "Translate"
+          "group": "Translation"
         }
       ]
     },
     "configuration": [
       {
-        "title": "translationExt",
+        "title": "Translator",
         "properties": {
-          "translationExt.processingTimeout": {
+          "Translator.processingTimeout": {
             "description": "Translation processing timeout. (ms)",
             "type": "number",
             "default": 750,
             "minimum": 500,
             "maximum": 2000
           },
-          "translationExt.pattern": {
+          "Translator.pattern": {
             "description": "Language combinations to translate.",
             "type": "array",
             "default": [

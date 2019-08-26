@@ -54,8 +54,17 @@
 ### 1.5
 
 - Refactoring the translation process.
-- The translation result has been changed to Diagnostics display. 
+- The translation result has been changed to Diagnostics display.
 - Actions on translation results are abolished.
 - 翻訳処理のリファクタリング。
 - 翻訳結果は、Diagnostics 表示に変更。
 - 翻訳結果に対するアクションは廃止。
+
+### 2.0
+
+- Large scale refactoring.
+- Implement action (replacement only) on translation result with code action
+- Implemented the translation result clear function.
+- 大規模リファクタリング。
+- 翻訳結果に対するアクション（置換のみ）をコードアクションで実装。
+- 翻訳結果クリア機能を実装。
