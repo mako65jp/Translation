@@ -23,9 +23,88 @@ export default class Translator
   private _diagnosticMap: Map<vscode.Diagnostic[]> = {};
   private _diagnostics: vscode.DiagnosticCollection = Object.create(null);
 
-  public static FixOnSuggestion: string =
-    Translator.Source + '.fixOnSuggestion';
-  private _fixOnSuggestionCommand: vscode.Disposable = Object.create(null);
+  public static ReplaceOnSuggestion: string =
+    Translator.Source + '.replaceOnSuggestion';
+  private _replaceOnSuggestionCommand: vscode.Disposable = Object.create(null);
+
+  public static AddOnSuggestion: string =
+    Translator.Source + '.addOnSuggestion';
+  private _addOnSuggestionCommand: vscode.Disposable = Object.create(null);
+
+  public provideCodeActions(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    context: vscode.CodeActionContext,
+    token: vscode.CancellationToken
+  ): vscode.Command[] {
+    const diagnostic = context.diagnostics.filter(
+      (d, i) => d.source === Translator.Source
+    )[0];
+    const suggestion = diagnostic.message;
+    const error = document.getText(range);
+
+    let commands: vscode.Command[] = [];
+    commands.push(
+      {
+        title: "Replace with '" + suggestion.substring(0, 80) + " ... '",
+        command: Translator.ReplaceOnSuggestion,
+        arguments: [document, diagnostic, error, suggestion]
+      },
+      {
+        title: "Add with '" + suggestion.substring(0, 80) + " ... '",
+        command: Translator.AddOnSuggestion,
+        arguments: [document, diagnostic, error, suggestion]
+      }
+    );
+
+    return commands;
+  }
+
+  private replaceWithSuggestion(
+    document: vscode.TextDocument,
+    diagnostic: vscode.Diagnostic,
+    error: string,
+    suggestion: string
+  ): any {
+    let diagnostics: vscode.Diagnostic[] = this._diagnosticMap[
+      document.uri.toString()
+    ];
+    let index: number = diagnostics.indexOf(diagnostic);
+
+    diagnostics.splice(index, 1);
+
+    this._diagnosticMap[document.uri.toString()] = diagnostics;
+    this._diagnostics.set(document.uri, diagnostics);
+
+    let edit = new vscode.WorkspaceEdit();
+    edit.replace(document.uri, diagnostic.range, suggestion);
+    return vscode.workspace.applyEdit(edit);
+  }
+
+  private addWithSuggestion(
+    document: vscode.TextDocument,
+    diagnostic: vscode.Diagnostic,
+    error: string,
+    suggestion: string
+  ): any {
+    let diagnostics: vscode.Diagnostic[] = this._diagnosticMap[
+      document.uri.toString()
+    ];
+    let index: number = diagnostics.indexOf(diagnostic);
+    const position = new vscode.Position(
+      diagnostics[index].range.end.line + 1,
+      0
+    );
+
+    diagnostics.splice(index, 1);
+
+    this._diagnosticMap[document.uri.toString()] = diagnostics;
+    this._diagnostics.set(document.uri, diagnostics);
+
+    let edit = new vscode.WorkspaceEdit();
+    edit.insert(document.uri, position, suggestion + '\n');
+    return vscode.workspace.applyEdit(edit);
+  }
 
   private static createDiagnosticObject(range: vscode.Range, suggest: string) {
     let diag = new vscode.Diagnostic(
@@ -49,49 +128,6 @@ export default class Translator
 
     this._diagnostics.set(document.uri, diagnostics);
     this._diagnosticMap[document.uri.toString()] = diagnostics;
-  }
-
-  public provideCodeActions(
-    document: vscode.TextDocument,
-    range: vscode.Range,
-    context: vscode.CodeActionContext,
-    token: vscode.CancellationToken
-  ): vscode.Command[] {
-    const diagnostic = context.diagnostics.filter(
-      (d, i) => d.source === Translator.Source
-    )[0];
-    const suggestion = diagnostic.message;
-    const error = document.getText(range);
-
-    let commands: vscode.Command[] = [];
-    commands.push({
-      title: "Replace with '" + suggestion.substring(0, 80) + " ... '",
-      command: Translator.FixOnSuggestion,
-      arguments: [document, diagnostic, error, suggestion]
-    });
-
-    return commands;
-  }
-
-  private fixWithSuggestion(
-    document: vscode.TextDocument,
-    diagnostic: vscode.Diagnostic,
-    error: string,
-    suggestion: string
-  ): any {
-    let diagnostics: vscode.Diagnostic[] = this._diagnosticMap[
-      document.uri.toString()
-    ];
-    let index: number = diagnostics.indexOf(diagnostic);
-
-    diagnostics.splice(index, 1);
-
-    this._diagnosticMap[document.uri.toString()] = diagnostics;
-    this._diagnostics.set(document.uri, diagnostics);
-
-    let edit = new vscode.WorkspaceEdit();
-    edit.replace(document.uri, diagnostic.range, suggestion);
-    return vscode.workspace.applyEdit(edit);
   }
 
   public async translation(editor: vscode.TextEditor) {
@@ -267,9 +303,13 @@ export default class Translator
   activate() {
     const self = this;
 
-    this._fixOnSuggestionCommand = vscode.commands.registerCommand(
-      Translator.FixOnSuggestion,
-      this.fixWithSuggestion.bind(this)
+    this._replaceOnSuggestionCommand = vscode.commands.registerCommand(
+      Translator.ReplaceOnSuggestion,
+      this.replaceWithSuggestion.bind(this)
+    );
+    this._addOnSuggestionCommand = vscode.commands.registerCommand(
+      Translator.AddOnSuggestion,
+      this.addWithSuggestion.bind(this)
     );
 
     let subscriptions: vscode.Disposable[] = [];
@@ -298,7 +338,8 @@ export default class Translator
   }
 
   dispose() {
-    this._fixOnSuggestionCommand.dispose();
+    this._replaceOnSuggestionCommand.dispose();
+    this._addOnSuggestionCommand.dispose();
     this._disposable.dispose();
   }
 }
