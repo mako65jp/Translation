@@ -21,4 +21,3 @@ export function getSelectedText(
 export function isEmptyOrSpaces(str: string): boolean {
   return str === null || str.match(/^\s*$/) !== null;
 }
-

@@ -2,7 +2,7 @@
   "name": "translation",
   "displayName": "Translation",
   "description": "This extension translates the selected string.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "publisher": "mako65jp",
   "repository": "https://github.com/mako65jp/Translation",
   "engines": {
@@ -19,11 +19,11 @@
     "commands": [
       {
         "command": "translation.translation",
-        "title": "選択範囲を翻訳"
+        "title": "%extension.translation.translation.title%"
       },
       {
         "command": "translation.clear",
-        "title": "翻訳をクリア"
+        "title": "%extension.translation.clear.title%"
       }
     ],
     "keybindings": [
@@ -64,36 +64,6 @@
             "default": 750,
             "minimum": 500,
             "maximum": 2000
-          },
-          "Translator.pattern": {
-            "description": "Language combinations to translate.",
-            "type": "array",
-            "default": [
-              {
-                "src": "en",
-                "target": [
-                  "ja",
-                  "es",
-                  "de",
-                  "fr",
-                  "it",
-                  "zh",
-                  "ko"
-                ]
-              },
-              {
-                "src": "ja",
-                "target": [
-                  "en",
-                  "es",
-                  "de",
-                  "fr",
-                  "it",
-                  "zh",
-                  "ko"
-                ]
-              }
-            ]
           }
         }
       }
@@ -119,6 +89,7 @@
   },
   "dependencies": {
     "request": "^2.88.0",
-    "request-promise": "^4.2.4"
+    "request-promise": "^4.2.4",
+    "vscode-nls": "^4.1.1"
   }
 }

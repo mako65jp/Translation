@@ -1,6 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+// import * as DiagnosticsAndActions from './diagnosticsAndActions';
 import * as utils from './utils';
 var request = require('request-promise');
 
@@ -12,13 +13,15 @@ export default class Translator
   implements vscode.CodeActionProvider, vscode.Disposable {
   private _disposable: vscode.Disposable = Object.create(null);
 
-  private static Source = 'Translator';
+  private _isEnabled = false;
 
+  private static ConfigProxy =
+    vscode.workspace.getConfiguration().get<string>('http.proxy') || '';
+
+  public static Source = 'Translator';
   private static Config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(
     Translator.Source
   );
-  private static ConfigProxy =
-    vscode.workspace.getConfiguration().get<string>('http.proxy') || '';
 
   private _diagnosticMap: Map<vscode.Diagnostic[]> = {};
   private _diagnostics: vscode.DiagnosticCollection = Object.create(null);
@@ -46,12 +49,12 @@ export default class Translator
     let commands: vscode.Command[] = [];
     commands.push(
       {
-        title: "Replace with '" + suggestion.substring(0, 80) + " ... '",
+        title: "置換： '" + suggestion.substring(0, 80) + " ... '",
         command: Translator.ReplaceOnSuggestion,
         arguments: [document, diagnostic, error, suggestion]
       },
       {
-        title: "Add with '" + suggestion.substring(0, 80) + " ... '",
+        title: "下に追加： '" + suggestion.substring(0, 80) + " ... '",
         command: Translator.AddOnSuggestion,
         arguments: [document, diagnostic, error, suggestion]
       }
@@ -78,7 +81,7 @@ export default class Translator
 
     let edit = new vscode.WorkspaceEdit();
     edit.replace(document.uri, diagnostic.range, suggestion);
-    return vscode.workspace.applyEdit(edit);
+    vscode.workspace.applyEdit(edit);
   }
 
   private addWithSuggestion(
@@ -87,23 +90,36 @@ export default class Translator
     error: string,
     suggestion: string
   ): any {
-    let diagnostics: vscode.Diagnostic[] = this._diagnosticMap[
-      document.uri.toString()
-    ];
-    let index: number = diagnostics.indexOf(diagnostic);
-    const position = new vscode.Position(
-      diagnostics[index].range.end.line + 1,
-      0
-    );
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      let diagnostics: vscode.Diagnostic[] = this._diagnosticMap[
+        document.uri.toString()
+      ];
+      let index: number = diagnostics.indexOf(diagnostic);
 
-    diagnostics.splice(index, 1);
+      const anchor = new vscode.Position(
+        diagnostics[index].range.end.line + 1,
+        0
+      );
+      const active = new vscode.Position(
+        diagnostics[index].range.end.line + 1,
+        0
+      );
+      const selection = new vscode.Selection(anchor, active);
+      editor.selection = selection;
 
-    this._diagnosticMap[document.uri.toString()] = diagnostics;
-    this._diagnostics.set(document.uri, diagnostics);
+      editor.edit(editBuilder =>{
+        editBuilder.replace(editor.selection,'[Translation]\n' + suggestion + '\n');
+      }).then(success => {
+        if (success){
+          diagnostics.splice(index, 1);
 
-    let edit = new vscode.WorkspaceEdit();
-    edit.insert(document.uri, position, suggestion + '\n');
-    return vscode.workspace.applyEdit(edit);
+          this._diagnosticMap[document.uri.toString()] = diagnostics;
+          this._diagnostics.set(document.uri, diagnostics);
+          vscode.commands.executeCommand('editor.action.addCommentLine');
+        }
+      });
+    }
   }
 
   private static createDiagnosticObject(range: vscode.Range, suggest: string) {
@@ -131,6 +147,10 @@ export default class Translator
   }
 
   public async translation(editor: vscode.TextEditor) {
+    if (!this._isEnabled) {
+      return;
+    }
+
     const selectionText = utils.getSelectedText(
       editor.document,
       editor.selection
@@ -163,7 +183,7 @@ export default class Translator
 
     // Translate using the first pattern.
     return await this.requestWithTimeout(text, target).then(async results => {
-      if (results.status === 0) {
+      if (results && results.status === 0) {
         // There was a response from the translation site.
 
         if (results.res.src === target) {
@@ -335,6 +355,8 @@ export default class Translator
     vscode.languages.registerCodeActionsProvider('*', this);
 
     this._disposable = vscode.Disposable.from(...subscriptions);
+
+    this._isEnabled = true;
   }
 
   dispose() {
