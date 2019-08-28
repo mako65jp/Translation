@@ -32,11 +32,11 @@ This extension for VSCode translates the selected string and enables the followi
 4. If there is no translation result in the selected area, nothing happens.  
   選択範囲に翻訳結果がなければ、何も起きません。
 
-## 必要条件
+## Requirements  必要条件
 
 - Be able to connect to the Internet.  
   インターネットに接続できる事。
 
-## 開発ソース
+## Development source  開発ソース
 
 <https://github.com/mako65jp/Translation.git>

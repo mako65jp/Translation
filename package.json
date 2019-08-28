@@ -2,7 +2,7 @@
   "name": "translation",
   "displayName": "Translation",
   "description": "This extension translates the selected string.",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "publisher": "mako65jp",
   "repository": "https://github.com/mako65jp/Translation",
   "engines": {
