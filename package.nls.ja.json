@@ -1,5 +1,5 @@
 {
-  "extension.translation.translation.title": "選択範囲を翻訳",
-  "extension.translation.clear.title": "翻訳をクリアする",
+  "extension.translation.translation.title": "Translation: 選択範囲を翻訳",
+  "extension.translation.clear.title": "Translation: 翻訳結果をクリア",
   "extension.translation.activate.message": "Translation がアクティブになりました！"
 }

@@ -45,12 +45,12 @@
         {
           "when": "editorHasSelection",
           "command": "translation.translation",
-          "group": "Translation"
+          "group": "0_Translation"
         },
         {
           "when": "editorFocus",
           "command": "translation.clear",
-          "group": "Translation"
+          "group": "0_Translation"
         }
       ]
     },
