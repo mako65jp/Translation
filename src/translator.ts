@@ -108,17 +108,22 @@ export default class Translator
       const selection = new vscode.Selection(anchor, active);
       editor.selection = selection;
 
-      editor.edit(editBuilder =>{
-        editBuilder.replace(editor.selection,'[Translation]\n' + suggestion + '\n');
-      }).then(success => {
-        if (success){
-          diagnostics.splice(index, 1);
+      editor
+        .edit(editBuilder => {
+          editBuilder.replace(
+            editor.selection,
+            '[Translation]\n' + suggestion + '\n'
+          );
+        })
+        .then(success => {
+          if (success) {
+            diagnostics.splice(index, 1);
 
-          this._diagnosticMap[document.uri.toString()] = diagnostics;
-          this._diagnostics.set(document.uri, diagnostics);
-          vscode.commands.executeCommand('editor.action.addCommentLine');
-        }
-      });
+            this._diagnosticMap[document.uri.toString()] = diagnostics;
+            this._diagnostics.set(document.uri, diagnostics);
+            vscode.commands.executeCommand('editor.action.addCommentLine');
+          }
+        });
     }
   }
 
@@ -185,12 +190,19 @@ export default class Translator
     return await this.requestWithTimeout(text, target).then(async results => {
       if (results && results.status === 0) {
         // There was a response from the translation site.
-
-        if (results.res.src === target) {
+        let isSource = results.res.src === target;
+        if (!isSource) {
+          results.res.ld_result.srclangs.forEach((srclang: string) => {
+              if (srclang === target) {
+                isSource = true;
+              }
+          });
+        }
+        if (isSource) {
           // If the source language and the specified language are equal.
 
           // Translate again with the next translation pattern setting.
-          const next = pattern.find(v => v.src === results.res.src);
+          const next = pattern.find(v => v.src === target);
           if (next && next.target[0]) {
             // The following translation pattern was found.
             return await this.requestWithTimeout(text, next.target[0]).then(
