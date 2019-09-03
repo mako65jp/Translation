@@ -193,9 +193,9 @@ export default class Translator
         let isSource = results.res.src === target;
         if (!isSource) {
           results.res.ld_result.srclangs.forEach((srclang: string) => {
-              if (srclang === target) {
-                isSource = true;
-              }
+            if (srclang === target) {
+              isSource = true;
+            }
           });
         }
         if (isSource) {
