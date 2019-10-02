@@ -75,7 +75,8 @@
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile",
         "test": "node ./out/src/test/runTest.js",
-        "tslint-check": "tslint-config-prettier-check ./tslint.json"
+        "tslint-check": "tslint-config-prettier-check ./tslint.json",
+        "build": "vsce package"
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
