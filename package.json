@@ -1,95 +1,100 @@
 {
-  "name": "translation",
-  "displayName": "Translation",
-  "description": "This extension translates the selected string.",
-  "version": "2.1.2",
-  "publisher": "mako65jp",
-  "repository": "https://github.com/mako65jp/Translation",
-  "engines": {
-    "vscode": "^1.37.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "*"
-  ],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "translation.translation",
-        "title": "%extension.translation.translation.title%"
-      },
-      {
-        "command": "translation.clear",
-        "title": "%extension.translation.clear.title%"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "translation.translation",
-        "key": "ctrl+Alt+t",
-        "mac": "cmd+Alt+t",
-        "when": "editorHasSelection"
-      },
-      {
-        "command": "translation.clear",
-        "key": "ctrl+Alt+x",
-        "mac": "cmd+Alt+x",
-        "when": "editorFocus"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "when": "editorHasSelection",
-          "command": "translation.translation",
-          "group": "0_Translation"
-        },
-        {
-          "when": "editorFocus",
-          "command": "translation.clear",
-          "group": "0_Translation"
-        }
-      ]
+    "name": "translation",
+    "displayName": "Translation",
+    "description": "This extension translates the selected string.",
+    "version": "2.2.0",
+    "publisher": "mako65jp",
+    "repository": "https://github.com/mako65jp/Translation",
+    "engines": {
+        "vscode": "^1.37.0"
     },
-    "configuration": [
-      {
-        "title": "Translator",
-        "properties": {
-          "Translator.processingTimeout": {
-            "description": "Translation processing timeout. (ms)",
-            "type": "number",
-            "default": 750,
-            "minimum": 500,
-            "maximum": 2000
-          }
-        }
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile",
-    "test": "node ./out/src/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/glob": "^7.1.1",
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^10.12.21",
-    "@types/vscode": "^1.37.0",
-    "glob": "^7.1.4",
-    "mocha": "^6.1.4",
-    "tslint": "^5.19.0",
-    "typescript": "^3.3.1",
-    "vscode-test": "^1.0.2"
-  },
-  "dependencies": {
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4",
-    "vscode-nls": "^4.1.1"
-  }
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "translation.translation",
+                "title": "%extension.translation.translation.title%"
+            },
+            {
+                "command": "translation.clear",
+                "title": "%extension.translation.clear.title%"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "translation.translation",
+                "key": "ctrl+Alt+t",
+                "mac": "cmd+Alt+t",
+                "when": "editorHasSelection"
+            },
+            {
+                "command": "translation.clear",
+                "key": "ctrl+Alt+x",
+                "mac": "cmd+Alt+x",
+                "when": "editorFocus"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "when": "editorHasSelection",
+                    "command": "translation.translation",
+                    "group": "0_Translation"
+                },
+                {
+                    "when": "editorFocus",
+                    "command": "translation.clear",
+                    "group": "0_Translation"
+                }
+            ]
+        },
+        "configuration": [
+            {
+                "title": "Translator",
+                "properties": {
+                    "Translator.processingTimeout": {
+                        "description": "Translation processing timeout. (ms)",
+                        "type": "number",
+                        "default": 750,
+                        "minimum": 500,
+                        "maximum": 2000
+                    }
+                }
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile",
+        "test": "node ./out/src/test/runTest.js",
+        "tslint-check": "tslint-config-prettier-check ./tslint.json"
+    },
+    "devDependencies": {
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^5.2.6",
+        "@types/node": "^10.12.21",
+        "@types/vscode": "^1.37.0",
+        "glob": "^7.1.4",
+        "mocha": "^6.1.4",
+        "prettier": "^1.17.0",
+        "tslint": "^5.19.0",
+        "tslint-config-prettier": "^1.18.0",
+        "tslint-plugin-prettier": "^2.0.1",
+        "typescript": "^3.3.1",
+        "vscode-test": "^1.0.2"
+    },
+    "dependencies": {
+        "encoding-japanese": "^1.0.30",
+        "request": "^2.88.0",
+        "request-promise": "^4.2.4",
+        "vscode-nls": "^4.1.1"
+    }
 }

@@ -1,15 +1,14 @@
 {
-	"rules": {
-		"no-string-throw": true,
-		"no-unused-expression": true,
-		"no-duplicate-variable": true,
-		"curly": true,
-		"class-name": true,
-		"semicolon": [
-			true,
-			"always"
-		],
-		"triple-equals": true
-	},
-	"defaultSeverity": "warning"
+    "rulesDirectory": ["tslint-plugin-prettier"],
+    "rules": {
+        "prettier": true,
+        "class-name": true,
+        "curly": true,
+        "no-duplicate-variable": true,
+        "no-string-throw": true,
+        "no-unused-expression": true,
+        "triple-equals": true
+    },
+    "defaultSeverity": "warning",
+    "extends": ["tslint-config-prettier"]
 }

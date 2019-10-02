@@ -1,5 +1,5 @@
 {
-  "extension.translation.translation.title": "Translation: Translate selection",
-  "extension.translation.clear.title": "Translation: Clear translation results",
-  "extension.translation.activate.message": "Translation is now active!"
+    "extension.translation.translation.title": "Translation: Translate selection",
+    "extension.translation.clear.title": "Translation: Clear translation results",
+    "extension.translation.activate.message": "Translation is now active!"
 }

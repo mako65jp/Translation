@@ -59,3 +59,8 @@
 
 - Improved language recognition errors in selected areas.  
   選択範囲の言語認識ミスを改善。
+
+### 2.2.0
+
+- Added a function to display a warning when the file is opened when it differs from the default encoding.  
+  ファイルオープン時に、デフォルトエンコードと異なる場合には、警告を表示する機能を付加。

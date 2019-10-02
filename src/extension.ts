@@ -4,11 +4,11 @@ var request = require('request-promise');
 import Controller from './controller';
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Translation is now active!');
+    console.log('Translation is now active!');
 
-  let controller = new Controller(context);
-  context.subscriptions.push(controller);
-  controller.activate();
+    let controller = new Controller(context);
+    context.subscriptions.push(controller);
+    controller.activate();
 }
 
 // this method is called when your extension is deactivated
